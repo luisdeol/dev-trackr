@@ -1,18 +1,24 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using DevTrackR.API.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace DevTrackR.API.Persistence
 {
-    public class DevTrackRContext
+    public class DevTrackRContext : DbContext
     {
-        public DevTrackRContext()
+        public DevTrackRContext(DbContextOptions<DevTrackRContext> options) : base(options)
         {
-            Packages = new List<Package>();
         }
         
-        public List<Package> Packages { get; set; }
+        public DbSet<Package> Packages { get; set; }
+        public DbSet<PackageUpdate> PackageUpdates { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder){ 
+            builder.Entity<Package>(e => {
+                e.HasMany(p => p.Updates)
+                    .WithOne()
+                    .HasForeignKey(p => p.PackageId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+        }
     }
 }
